@@ -4,40 +4,25 @@
 //
 //  Created by Juan Romero on 22/08/23.
 //
-
 import SwiftUI
 
 struct Home: View {
-    //Declare a new persistance constant
-    let persistence = PersistenceController()
-    
-    //Declare Enviroment managedObjectContext
-    @Environment(\.managedObjectContext) private var viewContext
-    
+    let persistence = PersistenceController.shared
     var body: some View {
-     
-        
         TabView {
-          
-            Text("")
-          
-            Menu()
-                //Call Persistance Enviroment method
-                .environment(\.managedObjectContext, persistence.container.viewContext)
-                .badge(1)
-                .tabItem{
-                    Label("Menu", systemImage: "list.dash")
-                }
-            UserProfile()
-                .badge(1)
-                .tabItem{
-                    Label("Profile", systemImage: "square.and.pencil")
-                }
             
-                .navigationBarBackButtonHidden(true)
-        }
-        
-        
+            Menu()
+                .tabItem {
+                Label("Menu", systemImage: "list.dash")
+            }
+            UserProfile()
+                .tabItem {
+                Label("Profile", systemImage: "square.and.pencil")
+            }
+            
+            
+        }.navigationBarBackButtonHidden(true)
+            .environment(\.managedObjectContext, persistence.container.viewContext)
     }
 }
 

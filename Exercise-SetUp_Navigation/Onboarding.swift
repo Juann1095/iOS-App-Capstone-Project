@@ -1,86 +1,68 @@
 //  Onboarding.swift
 //  Created by Juan Romero on 21/08/23.
 
-//VAR KEYS
-let kFirstName = "First Name key"
-let kLastname = "Last Name key"
-let kEmail = "Email key"
-
-//Constant to store the login status
-let kIsloggedIn = "kIsLoggedIn"
-
-
-import Foundation
 import SwiftUI
-
+let kFirstName = "first name key"
+let kLastName = "last name key"
+let kEmail = "email"
+let kIsLoggedIn = "kIsLoggedIn"
 struct Onboarding: View {
-    @State private var fname = ""
-    @State private var lname = ""
-    @State private var email = ""
-    @State private var isLoggedIn = false
-    
-    
+    @State  var firstName: String = ""
+    @State  var lastName: String = ""
+    @State  var email: String = ""
+    @State  var isLogin: Bool = false
+
     var body: some View {
-       
-        //NavigationView
-        NavigationView{
-            VStack{
-                //NavigationLink
-                NavigationLink(destination: Home(), isActive: $isLoggedIn){
-                    //Return a new instance of EmptyView
-                    EmptyView()
-                }
-                
-                TextField("First Name", text:$fname)
-                    .padding(/*@START_MENU_TOKEN@*/.all/*@END_MENU_TOKEN@*/)
-                    .foregroundColor(.black)
-                
-                
-                TextField("Type your Last Name", text:$lname)
-                    .padding(.all)
-                
-                TextField("Type your Email", text:$email)
-                    .padding(.all)
-                
-                Button("Register"){
-                    if (fname.isEmpty && lname.isEmpty && email.isEmpty == false){
-                        UserDefaults.standard.set(fname, forKey: kFirstName)
-                        UserDefaults.standard.set(lname, forKey: lname)
+        NavigationView {
+            VStack(
+                spacing: 10
+            ){
+                NavigationLink(isActive: $isLogin) {
+
+                            Home()
+
+                          } label: {
+
+                            EmptyView()
+
+                          }
+                TextField("First Name", text: $firstName )
+                    .padding()
+
+                TextField("Last Name", text: $lastName)
+                      .padding()
+
+                TextField("Email", text: $email)
+                    .padding()
+
+                Button("Sign In", action: {
+                    if firstName.isEmpty{}
+                    else if lastName.isEmpty{}
+                    else if email.isEmpty{}
+                    else{
+                        print("login")
+
+                        UserDefaults.standard.set(firstName, forKey: kFirstName)
+                        UserDefaults.standard.set(lastName, forKey: kLastName)
                         UserDefaults.standard.set(email, forKey: kEmail)
-                        isLoggedIn = true
-                        
-                        //UserDefaults - Set to true isloggedin
-                        UserDefaults.standard.set(true, forKey: kIsloggedIn )
+                        UserDefaults.standard.set(true, forKey: kIsLoggedIn)
+                        isLogin = true
+
                         
                     }
-                    else {
-                        
+            
+                    
+                })
+
+        }.textFieldStyle(.roundedBorder).buttonStyle(.bordered)
+                .onAppear{
+                    if UserDefaults.standard.bool(forKey:kIsLoggedIn){
+                        isLogin = true
                     }
                 }
                 
-                .padding(/*@START_MENU_TOKEN@*/.all/*@END_MENU_TOKEN@*/)
-                .frame(width: 350, height: 50)
-                .font(.title)
-                .foregroundColor(.white)
-                .background(Color.mint)
-                .cornerRadius(10)
-                
-                //Spacer
-                Spacer()
-                
-            }
-            .navigationTitle("Register")
-            
-            onAppear{
-                //Call UserDefaults bool
-                if(UserDefaults.standard.bool(forKey: kIsloggedIn)) {
-                    //If uses is logged in already, set the isLoggedIn local variable to true
-                    isLoggedIn = true
-                }
-            }
-            
-        }//NavigationView
-        
+        }
+
     }
 }
 

@@ -4,146 +4,100 @@
 //
 
 import SwiftUI
-import CoreData
 
 struct Menu: View {
-    //Search field,
-    @State var searchText = ""
-    
+    @Environment(\.managedObjectContext) private var viewContext
+    @State var searchParamters = ""
     var body: some View {
         VStack {
-            Text("Little Lemon")
-                .font(.title)
+            Text("RESTAURANT")
             Text("Chicago")
-                .font(.callout)
-            Text("Little Lemon is a family owned Mediterranean restaurant, focused on traditional recipes served with a modern twist")
-                .font(.headline)
+            Text("App for order food from any place in Chicago")
             
-            //Remove list from menu view , and in its place call FetchedObjects, this will fetch all the Dishes from core data and make them avaliable to use in the closure
+            TextField( "Search menu",  text: $searchParamters)
+
             
-            //TextField with the searchtext var above FetchedObjects element
-            TextField("Search menu", text: $searchText)
-            
-            //Set sortDescriptors
-            //FetchedObjects with argument
-            FetchedObjects(sortDescriptors: buildSortDescriptors(), predicate: NSPredicate)
-            
-    
+         FetchedObjects(
+            predicate: buildPredicate(),
+            sortDescriptors: buildSortDescriptors()
+         ) { (dishes: [Dish]) in
             List{
-                ForEach (dishes){ Dish in
-                    //HStack
+                ForEach(dishes, id: \.self) { dish in
                     HStack{
-                        //Text
-                        Text(title)
-                        Text(price)
+                        Text(dish.title ?? ""  )
                         
-                        //AsyncImage:
-                        AsyncImage(url: URL (string: "")) { image in
-                            image.resizable()
-                        } placeholder: {
-                            //ProgressView()
-                        }
-                        
-                            
-                        
+                        Text(dish.price ?? "")
+                    }
+                    AsyncImage(url: URL(string: dish.image ?? "")){ image in
+                        image.resizable()
+                    } placeholder: {
+                        ProgressView()
+                    }
+                    .frame(height: 200)
+                   }
+            }
+        }
+            
+        }.onAppear{
+            getMenuData()
+        }
+    }
+    
+    func getMenuData(){
+    
+
+        PersistenceController.shared.clear()
+        let url = URL(string: "https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/menu.json")!
+        
+        let request = URLRequest(url: url)
+        let task = URLSession.shared.dataTask(with: request) {
+            data, response, error in
+            if let dataa = data {
+                
+
+                let fullMenu = try? JSONDecoder().decode(MenuList.self, from: dataa)
+              
+
+                let menuItems = fullMenu?.menu
+
+                if let menuItems = menuItems{
+                    for menuItem in menuItems {
+                  
+                        let oneDish = Dish(context: viewContext)
+                        oneDish.title = menuItem.title
+                        oneDish.price = menuItem.price
+                        oneDish.image = menuItem.image
+                        try? viewContext.save()
+
                     }
                 }
-                
             }
-            
-            //Call the method getMenuData
-            .onAppear{
-                getMenuData()
-            }
-            
-        }
-    }
-    
-    func buildPredicate() -> NSPredicate{
-        if (searchText == ""){
-           return NSPredicate(value: true)
-        }else{
-          //Return instance of NSPredicate , it will try to match part of the title property of the Dish to the given textand return all objects that match
-            return NSPredicate(format:"title CONTAINS [cd] %@", searchText)
-           
         }
         
-        
+        task.resume()
     }
     
+    func buildSortDescriptors()->[NSSortDescriptor]{
+        return[NSSortDescriptor(key:"title",
+             ascending: true,
+               selector:
+              #selector(NSString.localizedStandardCompare)),]
+    }
+    func buildPredicate()-> NSPredicate {
+        if(searchParamters.isEmpty){
+            return NSPredicate(value: true)
+            
+        }
+        else{
+             
+            return NSPredicate(format: "title CONTAINS[cd] %@", searchParamters)
+        }
+        
+    }
 }
 
 struct Menu_Previews: PreviewProvider {
     static var previews: some View {
         Menu()
-      
     }
 }
-
-//Hold URL & URL Request
-func getMenuData() async{
-    @Environment(\.managedObjectContext) var viewContext
-    //Clear the database each time before saving the menu list again
-    let persistencecontroller = PersistenceController()
-    
-    let url = URL(string:"https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/menu.json")!
-    let task = URLSession.shared.dataTask(with: url) {(data: Data?, response: URLResponse?, error: Error?) in
-    guard let data = data else { return }
-    print(String(data: data, encoding: .utf8)!)
-        
-        if let menu = try? JSONDecoder().decode([String:JSONMenu].self, from: data){
-            print("Decoded : \(menu)")
-            
-            for menu in menu {
-            //initialize a new --Dish-- instance and store it into a constant
-              let dish = Dish(context: viewContext)
-            //Use constant to set --title-- --image-- --price--
-                dish.title = "title"
-                dish.image = "image"
-                dish.price = "price"
-            }
-            
-            //Save data into the database
-            try? viewContext.save()
-            
-            
-        }
-        
-        
-    }
-    task.resume()
-    
-}
-
-func buildSortDescriptors() -> NSSortDescriptor {
-    //Return an array of sort descriptors of --Dish-- objects
-    
-    @FetchRequest(
-        sortDescriptors:[
-        NSSortDescriptor(key: "title",
-                         ascending: true,
-                         selector: #selector(NSString.localizedStandardCompare))
-        ],
-        
-        animation: .default)
-     var dishes: FetchedResults<Dish>
-            
-}
-
-
-func test(){
-    @FetchRequest(
-        sortD,
-        predicate: NSPredicate(),
-        animation: .default
-    )
-    
-}
-
-
-
-
-
-    
-    
-
